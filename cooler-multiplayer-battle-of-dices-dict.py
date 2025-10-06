@@ -1,0 +1,137 @@
+import copy 
+import dice
+
+# Number of wins needed to win the game:
+winning_score = 3
+# Array for storing the names of the players:
+player_names = []
+# Array for storing the number of wins for each player:
+player_wins = []
+
+# Variables to keep track of the score:
+rounds = 0
+gameover = False
+# Number of wins needed to win the game:
+winning_score = 3
+
+# Dictionary Template for storing player information:
+player_info = {
+    "name": "",
+    "email": "",
+    "country": "",
+    "wins": 0,
+    "rolls": []
+}
+
+# LIST FOR STORING DICTIONARYS
+players = []
+
+def setup_players():
+    # LIST FOR STORING DICTIONARYS
+    _players = []
+
+    # NUMBER OF PLAYERS
+    number_of_players = int(input("How many players?"))
+
+    # PLAYER NAME LOOP
+    for i in range(number_of_players):
+        # DEEPCOPY
+        player = copy.deepcopy(player_info)
+
+        player["name"] = input(f"What is the name of Player {i+1}?")
+        player["email"] = input(f"What is the e-mail of Player {i+1}?")
+        player["country"] = input(f"What is the country of Player {i+1}?")
+
+        _players.append(player)
+    return _players
+
+def save_results(players, rounds):
+    # Save results to a file
+    filename = input("Enter the filename to save the results: ")
+    with open(filename, "w") as file: # "w" = write mode
+        # Player Information:
+        file.write("Player Information:\n")
+
+        # Saves each player information using python automatically concatenation
+        # of adjacent strings:
+        for each_player in players:
+            file.write(
+                f"Name: {each_player['name']}\n"
+                f"* E-mail: {each_player['email']}\n"
+                f"* Country: {each_player['country']}\n"
+                f"* Wins: {each_player['wins']}\n\n"
+            )
+
+        # ... still in with open
+        file.write("\nGame rounds:\n")
+
+        # Round history
+        for r in range(rounds):
+            # Start with empty text for this round
+            rolls_str = ""
+
+            # Go through each player and build the string step by step
+            for i, each_player in enumerate(players):
+                rolls_str += f"{each_player['name']} rolled {each_player['rolls'][r]}"
+
+                # Add a comma and space unless it’s the last player
+                if i < len(players) - 1:
+                    rolls_str += ", "
+
+            # Now write the full round info to the file
+            file.write(f"Round {r+1}:\n {rolls_str}\n")
+
+# ---- Setup players (minimal change) ----
+players = copy.deepcopy(setup_players())   # ensure deepcopy used here too
+
+# Repeats until the game is over. As many rounds as necessary:
+while gameover is False:
+
+    print(f"Round {rounds+1}:")
+    #input("\nPress ENTER to continue...")
+
+    # Dice roll for each player in the current round:
+    current_rolls = []
+
+    # We need to roll the dice for each player:
+    for each_player in players:
+        roll = dice.rollD6()
+
+        #player_rolls_history[i].append(roll)
+        each_player["rolls"].append(roll)
+
+        current_rolls.append(roll)
+
+        print(f"Player {each_player['name']} rolled: {roll}")
+
+    # Obtain the highest roll
+    max_roll = max(current_rolls)
+
+    # FIND WINNER / ROUND
+    winners = []
+
+    # HIGHEST ROLL
+    for each_player in players:
+        if(each_player["rolls"][-1] == max_roll):
+            each_player["wins"] += 1
+            print(f"Player {each_player['name']} won in round {rounds}")
+
+            winners.append(each_player["name"])
+    print(f"Winners of this round: {winners}")
+
+    # GAME STILL GOING
+
+    for each_player in players:
+        if(each_player["wins"] >= winning_score):
+            print(f"\n {each_player['name']} is the newest Battle of Dices Champion!")
+            gameover = True
+
+    if gameover is False:
+        print("This heated Battle of Dices is still going on! Who will win in the end? ")
+
+    rounds += 1
+
+#SAVE RESULTS
+save_results(players, rounds)
+
+print("\nGame over! Results saved successfully.")
